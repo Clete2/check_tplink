@@ -2,22 +2,20 @@ name: Rust
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --release
-    - name: Semantic Releaser
-      uses: brpaz/action-semantic-release@v1
-          
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cargo build --release
+      - name: Semantic Releaser
+        uses: brpaz/action-semantic-release@v1
