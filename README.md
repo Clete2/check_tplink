@@ -28,8 +28,11 @@ PortsConnected=3
 TotalPorts=5
 ```
 
-# LibreNMS screenshot
+# LibreNMS screenshots
 ![screenshot.png](./screenshot.png)
+
+Sample config:
+![config.png](./config.png)
 
 # Statistics Provided
 
