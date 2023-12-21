@@ -18,6 +18,5 @@ plugins:
   - "@semantic-release/commit-analyzer"
   - - "@semantic-release/release-notes-generator"
   - - "@semantic-release/github"
-    - repositoryUrl: https://github.com/Clete2/check_tplink.git
     - assets:
         - target/x86_64-unknown-linux-gnu/release/check_tplink
