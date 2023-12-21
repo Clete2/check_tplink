@@ -2,7 +2,7 @@ extern crate lazy_static;
 
 use std::collections::HashMap;
 
-use anyhow::Error;
+use anyhow::{anyhow, Error};
 use check_tplink::tplink_stats::TPLinkStats;
 use clap::Parser;
 use reqwest::Client;
@@ -21,7 +21,7 @@ struct Args {
 
     /// Authentication password
     #[arg(short, long, env)]
-    authentication: String,
+    authentication: Option<String>,
 }
 
 #[tokio::main]
@@ -31,17 +31,22 @@ async fn main() -> Result<(), Error> {
             println!("{}", result);
             Ok(())
         }
-        Err(error) => {
-            println!("ERROR: {}", error);
-            Err(error)
-        }
+        Err(error) => Err(error),
     }
 }
 
 async fn process() -> Result<String, Error> {
     let args = Args::parse();
 
-    let response = get_statistics(&args.hostname, &args.logname, &args.authentication).await?;
+    let password = if let Some(authentication) = args.authentication {
+        authentication
+    } else {
+        std::fs::read_to_string(".tplink").or(Err(anyhow!(
+            "No password provided and could not read password out of `.tplink` file."
+        )))?
+    };
+
+    let response = get_statistics(&args.hostname, &args.logname, &password).await?;
 
     let status: TPLinkStats = response.try_into()?;
     let status = status.port_statistics;
@@ -50,6 +55,7 @@ async fn process() -> Result<String, Error> {
     let mut total_bad_tx: u128 = 0;
     let mut total_good_rx: u128 = 0;
     let mut total_bad_rx: u128 = 0;
+    let total_ports = status.len();
 
     let mut num_ports_connected = 0;
     for s in &status {
@@ -60,8 +66,7 @@ async fn process() -> Result<String, Error> {
 
     let mut response = format!(
         "OK: ports connected: {}/{} |",
-        num_ports_connected,
-        status.len()
+        num_ports_connected, total_ports
     );
 
     for stat in status.into_iter() {
@@ -82,8 +87,8 @@ async fn process() -> Result<String, Error> {
     }
 
     response.push_str(&format!(
-        " TotalGoodTX={}c TotalBadTX={}c TotalGoodRX={}c TotalBadRX={}c",
-        total_good_tx, total_bad_tx, total_good_rx, total_bad_rx
+        " TotalGoodTX={}c TotalBadTX={}c TotalGoodRX={}c TotalBadRX={}c PortsConnected={} TotalPorts={}",
+        total_good_tx, total_bad_tx, total_good_rx, total_bad_rx, num_ports_connected, total_ports
     ));
 
     Ok(response)
