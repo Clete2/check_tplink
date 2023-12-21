@@ -29,7 +29,7 @@ TotalPorts=5
 ```
 
 # LibreNMS screenshot
-
+![screenshot.png](./screenshot.png)
 
 # Statistics Provided
 
