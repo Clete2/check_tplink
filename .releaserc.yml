@@ -1,0 +1,22 @@
+# --------------------------------------------
+#
+# Standard recommended semantic-release configuration.
+#
+# Alternative configurations
+#  - A .releaserc file, written in YAML or JSON, with optional extensions: .yaml/.yml/.json/.js
+#  - A release.config.js file that exports an object
+#  - A release key in the project's package.json file
+#  Source: https://semantic-release.gitbook.io/semantic-release/usage/configuration#configuration-file
+#
+#----------------------------------------------
+
+---
+branches:
+  - master
+  - main
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - - "@semantic-release/release-notes-generator"
+  - - "@semantic-release/github"
+    - assets:
+        - target/x86_64-unknown-linux-gnu/release/check_tplink
