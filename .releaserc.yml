@@ -19,4 +19,4 @@ plugins:
   - - "@semantic-release/release-notes-generator"
   - - "@semantic-release/github"
     - assets:
-        - target/x86_64-unknown-linux-gnu/release/check_tplink
+        - target/x86_64-unknown-linux-gnu/release/check_tl_sg108e

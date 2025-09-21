@@ -1,8 +1,8 @@
-`check_tplink` is a Nagios plugin which outputs stats for TP Link "Easy Smart Manage" switches that do not support SNMP.
+`check_tl_sg108e` is a Nagios plugin which outputs stats for TP Link "Easy Smart Manage" switches that do not support SNMP.
 
 I personally use it with LibreNMS as a "service" on an ICMP-only host. The idea was spawned in this [LibreNMS community thread](https://community.librenms.org/t/discovering-a-switch-that-does-not-support-snmp/).
 
-It has only been tested on TL-SG105E hardware version 5.0.
+It has only been tested on TL-SG108E hardware version 3.0, firmware version 1.0.0 Build 20171214 Rel.70905.
 
 NOTE: These TP Link switches are very insecure. Logging in to the UI will automatically cause all requests from the origin IP to be authenticated even if they do not pass cookies/session data.
 
@@ -60,10 +60,10 @@ In LibreNMS, add your TP Link switch as an ICMP-only device (disable SNMP). You 
 
 # Usage
 
-Run `check_tplink --help` for help.
+Run `check_tl_sg108e --help` for help.
 
 ```
-Usage: check_tplink [OPTIONS] --hostname <HOSTNAME>
+Usage: check_tl_sg108e [OPTIONS] --hostname <HOSTNAME>
 
 Options:
   -H, --hostname <HOSTNAME>              TP Link switch hostname [env: HOSTNAME=]
@@ -73,16 +73,16 @@ Options:
   -V, --version                          Print version
 ```
 
-Simple usage: `check_tplink -H <hostname> -l admin -a <password>`
+Simple usage: `check_tl_sg108e -H <hostname> -l admin -a <password>`
 
 Usage with password as environment variable:
 ```bash
 export AUTHENTICATION=<password>
-check_tplink -H <hostname> -l admin
+check_tl_sg108e -H <hostname> -l admin
 ```
 
 Usage with password in special `.tplink` file:
 ```bash
 echo "<password>" > .tplink
-check_tplink -H <hostname> -l admin
+check_tl_sg108e -H <hostname> -l admin
 ```

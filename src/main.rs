@@ -3,9 +3,10 @@ extern crate lazy_static;
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Error};
-use check_tplink::tplink_stats::TPLinkStats;
+use check_tl_sg108e::tl_sg108e_stats::TPLinkStats;
 use clap::Parser;
 use reqwest::Client;
+use regex::Regex;
 
 // Ref: https://nagios-plugins.org/doc/guidelines.html#AEN200
 #[derive(Parser, Debug)]
@@ -103,7 +104,7 @@ async fn login(
     let mut params = HashMap::new();
     params.insert("username", username);
     params.insert("password", password);
-    params.insert("cpassword", "");
+    //params.insert("cpassword", "");// unused/breaks on tl_sg108e
     params.insert("logon", "Login");
 
     let response = client
@@ -112,11 +113,52 @@ async fn login(
         .send()
         .await?;
 
-    let response = response.text().await?;
+    // returns 401 on success, use response text.
+    let response_text = response.text().await?;
 
-    match response.contains("logonInfo") {
-        true => Ok(()),
-        false => Err(Error::msg("Could not login. Check the configuration.")),
+    //success:
+    /*
+    <script>
+var logonInfo = new Array(
+0,
+0,0);
+var g_Lan = 460;
+var g_year=2017;
+</script>
+...
+ */
+
+//fail:
+/*<script>
+    var logonInfo = new Array(
+        1,
+        0, 0);
+    var g_Lan = 460;
+    var g_year = 2017;
+</script> */
+/*var errType = logonInfo[0];
+<SPAN class="WARN_NORMAL" id="t_error1">The user name or the password is wrong.</SPAN>',
+<SPAN class="WARN_NORMAL" id="t_error2">The user is not allowed to login.</SPAN>
+<SPAN class="WARN_NORMAL" id="t_error3">The number of the user that allowed to login has been full.</SPAN>';
+<SPAN class="WARN_NORMAL" id="t_error4">The number of the login user has been full,it is allowed 16 people to login at the same time.</SPAN>'
+<SPAN class="WARN_NORMAL" id="t_error5">The session is timeout.<br>Please login again.</SPAN>'
+*/
+    let login_status: u8 = Regex::new(r"var logonInfo = new Array\(\n\s*([0,1,2,3,4,5]),")
+    .expect("logon status regex failed to compile")
+    .captures(&response_text)
+    .expect("login status regex failed to capture")
+    .get(1)
+    .expect("login status regex didn't have enought matches")
+    .as_str()
+    .parse()?;
+    match login_status {
+        0 => Ok(()),
+        1 => Err(Error::msg("The user name or the password is wrong.")),
+        2 => Err(Error::msg("The user is not allowed to login.")),
+        3 => Err(Error::msg("The number of the user that allowed to login has been full.")),
+        4 => Err(Error::msg("The number of the login user has been full,it is allowed 16 people to login at the same time.")),
+        5 => Err(Error::msg("The session is timeout.<br>Please login again.")),
+        6_u8..=u8::MAX => Err(Error::msg("unpossible login error"))
     }
 }
 
