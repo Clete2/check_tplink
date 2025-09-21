@@ -2,7 +2,7 @@ extern crate lazy_static;
 
 use std::collections::HashMap;
 
-use anyhow::{anyhow, Error};
+use anyhow::{Error};
 use check_tl_sg108e::tl_sg108e_stats::TPLinkStats;
 use clap::Parser;
 use reqwest::Client;
@@ -18,10 +18,10 @@ struct Args {
 
     /// Username
     #[arg(short, long, env, default_value = "admin")]
-    logname: String,
+    username: String,
 
     /// Authentication password
-    #[arg(short, long, env)]
+    #[arg(short, long, env, default_value = "admin")]
     authentication: Option<String>,
 }
 
@@ -39,15 +39,21 @@ async fn main() -> Result<(), Error> {
 async fn process() -> Result<String, Error> {
     let args = Args::parse();
 
-    let password = if let Some(authentication) = args.authentication {
+    let password_file = ".".to_owned() + &args.hostname + "_password";
+
+    let password_from_file = 
+        std::fs::read_to_string(password_file);
+    let password = if let Some(p) = password_from_file.ok() {
+        p
+    } else if let Some(authentication) = args.authentication {
+        //"No password provided and could not read password out of `.**hostname**_password` file."
+        //fallback to passed arg or default admin login
         authentication
-    } else {
-        std::fs::read_to_string(".tplink").or(Err(anyhow!(
-            "No password provided and could not read password out of `.tplink` file."
-        )))?
+     } else {
+        "".to_owned()
     };
 
-    let response = get_statistics(&args.hostname, &args.logname, &password).await?;
+    let response = get_statistics(&args.hostname, &args.username, &password).await?;
 
     let status: TPLinkStats = response.try_into()?;
     let status = status.port_statistics;
