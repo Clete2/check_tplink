@@ -18,5 +18,3 @@ jobs:
       - uses: actions/checkout@v3.0.0
       - name: Build
         run: cargo build --release
-      - name: Semantic Releaser
-        uses: brpaz/action-semantic-release@v1
