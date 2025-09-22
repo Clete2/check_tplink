@@ -67,7 +67,7 @@ Usage: check_tl_sg108e [OPTIONS] --hostname <HOSTNAME>
 
 Options:
   -H, --hostname <HOSTNAME>              TP Link switch hostname [env: HOSTNAME=]
-  -l, --logname <LOGNAME>                Username [env: LOGNAME=] [default: admin]
+  -u, --username <USERNAME>              Username [env: USERNAME=] [default: admin]
   -a, --authentication <AUTHENTICATION>  Authentication password [env: AUTHENTICATION=]
   -h, --help                             Print help
   -V, --version                          Print version
