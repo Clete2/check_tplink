@@ -81,8 +81,8 @@ export AUTHENTICATION=<password>
 check_tl_sg108e -H <hostname> -l admin
 ```
 
-Usage with password in special `.tplink` file:
+Usage with password in special `.<hostname>_password` file:
 ```bash
-echo "<password>" > .tplink
+echo "<password>" > .<hostname>_password
 check_tl_sg108e -H <hostname> -l admin
 ```

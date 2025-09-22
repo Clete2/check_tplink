@@ -3,7 +3,7 @@ name: Rust
 on:
   workflow_dispatch:
   push:
-    branches: ["master"]
+    branches: ["sg108e"]
   pull_request:
     branches: ["master"]
 
