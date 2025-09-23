@@ -20,8 +20,12 @@ struct Args {
     logname: String,
 
     /// Authentication password
-    #[arg(short, long, env)]
+    #[arg(short, long, env, help = "Password. If not provided, will read from the file specified in --password-file.")]
     authentication: Option<String>,
+
+    /// Password file path
+    #[arg(short, long, env, default_value = ".tplink", help = "File to read password from if --authentication is not provided.")]
+    password_file: Option<String>,
 }
 
 #[tokio::main]
@@ -40,10 +44,13 @@ async fn process() -> Result<String, Error> {
 
     let password = if let Some(authentication) = args.authentication {
         authentication
+    } else if let Some(password_file) = args.password_file {
+        std::fs::read_to_string(&password_file)
+            .map_err(|_| anyhow!("No password provided and could not read password from file: {}", password_file))?
+            .trim()
+            .to_string()
     } else {
-        std::fs::read_to_string(".tplink").or(Err(anyhow!(
-            "No password provided and could not read password out of `.tplink` file."
-        )))?
+        return Err(anyhow!("No password provided via --authentication or --password-file"));
     };
 
     let response = get_statistics(&args.hostname, &args.logname, &password).await?;
@@ -103,7 +110,6 @@ async fn login(
     let mut params = HashMap::new();
     params.insert("username", username);
     params.insert("password", password);
-    params.insert("cpassword", "");
     params.insert("logon", "Login");
 
     let response = client
