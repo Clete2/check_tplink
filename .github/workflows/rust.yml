@@ -71,7 +71,18 @@ jobs:
           cp artifacts/check_tplink-aarch64-unknown-linux-gnu/check_tplink-aarch64-unknown-linux-gnu release-assets/
 
       - name: Semantic Release
+        id: semantic-release
         uses: go-semantic-release/action@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          release-assets: release-assets/*
+
+      - name: Upload Release Assets
+        if: steps.semantic-release.outputs.version != ''
+        run: |
+          # Get the version from semantic release output
+          VERSION="${{ steps.semantic-release.outputs.version }}"
+          if [ -n "$VERSION" ]; then
+            gh release upload "v$VERSION" release-assets/* --clobber
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
